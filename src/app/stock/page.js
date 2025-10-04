@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function StockManager() {
+const stock = () => {
   const [items, setItems] = useState([
     { id: 1, name: "Sugar", quantity: 50 },
     { id: 2, name: "Rice", quantity: 100 },
@@ -29,7 +29,9 @@ export default function StockManager() {
     if (value > 0) {
       setItems(
         items.map((item) =>
-          item.id === id ? { ...item, quantity: Number(item.quantity) + value } : item
+          item.id === id
+            ? { ...item, quantity: Number(item.quantity) + value }
+            : item
         )
       );
       setStockInput({ ...stockInput, [id]: "" });
@@ -54,7 +56,10 @@ export default function StockManager() {
     setItems(items.filter((item) => item.id !== id));
   };
 
-  const totalStock = items.reduce((sum, item) => sum + Number(item.quantity), 0);
+  const totalStock = items.reduce(
+    (sum, item) => sum + Number(item.quantity),
+    0
+  );
 
   const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase())
@@ -74,7 +79,6 @@ export default function StockManager() {
           Stock
         </h1>
       </div>
-
       {/* Total Stock + Add New Item Button */}
       <div className="max-w-2xl mx-auto flex justify-between items-center mb-6">
         <div className="bg-green-700 text-green-100 px-4 py-2 rounded-lg text-lg sm:text-xl font-semibold">
@@ -147,7 +151,9 @@ export default function StockManager() {
             {filteredItems.length > 0 ? (
               filteredItems.map((item) => (
                 <tr key={item.id} className="text-center sm:text-center">
-                  <td className="border px-2 sm:px-4 py-2 text-left">{item.name}</td>
+                  <td className="border px-2 sm:px-4 py-2 text-left">
+                    {item.name}
+                  </td>
                   <td className="border px-2 sm:px-4 py-2">{item.quantity}</td>
                   <td className="border px-2 sm:px-4 py-2">
                     <div className="flex items-center justify-center space-x-2">
@@ -199,4 +205,6 @@ export default function StockManager() {
       </div>
     </div>
   );
-}
+};
+
+export default stock;
