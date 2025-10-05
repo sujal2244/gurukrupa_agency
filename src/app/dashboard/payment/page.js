@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const Payment = () => {
     //pending payment only paid button
-    const [bills, setBills] = useState([]);
+    const [bills, setBills] = useState(null);
     const [loading, setLoading] = useState(true);
     useEffect(() => {
         const fetchBills = async () => {
@@ -35,7 +35,7 @@ const Payment = () => {
             console.log(e);
         }
     };
-    const totalAmount = bills.reduce((sum, bill) => sum + bill.total, 0);
+    const totalAmount = bills?.reduce((sum, bill) => sum + bill.total, 0)||0;
     return (
         <div className="h-screen w-full bg-gray-800 flex flex-col items-center p-4">
             {/* Header */}
@@ -101,7 +101,7 @@ const Payment = () => {
                                             onClick={() =>
                                                 handlePaid(bill._id)
                                             }>
-                                            Paid
+                                            UnPaid
                                         </button>
                                     </td>
                                 </tr>
