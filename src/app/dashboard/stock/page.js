@@ -1,39 +1,67 @@
 "use client";
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 const Stock = () => {
-    const [items, setItems] = useState([
-        { id: 1, name: "Sugar", quantity: 50 },
-        { id: 2, name: "Rice", quantity: 100 },
-        { id: 3, name: "Wheat", quantity: 75 },
-    ]);
-
+    const [items, setItems] = useState([]);
+    const [loadData, setLoadData] = useState(true);
     const [form, setForm] = useState({ name: "", quantity: "" });
     const [stockInput, setStockInput] = useState({});
     const [search, setSearch] = useState("");
     const [showForm, setShowForm] = useState(false);
-
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const { data } = await axios.get("/api/items");
+                setItems(data.data);
+            } catch (e) {
+                console.log(e.message);
+            } finally {
+                setLoadData(false);
+            }
+        };
+        fetchData();
+    }, [loadData]);
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setItems([...items, { ...form, id: Date.now() }]);
+        try {
+            if (items.find((item) => item.name === form.name)) {
+                alert("Item with this name already exists");
+            }
+            const res = axios.post("/api/items", {
+                itemname: form.name,
+                quantity: form.quantity,
+            });
+            console.log(res);
+        } catch (e) {
+            console.log(e.message);
+        }
+        setLoadData(true);
+        //  setItems([...items, { itemname: form.name, quantity: form.quantity }]);
         setForm({ name: "", quantity: "" });
         setShowForm(false);
     };
 
-    const increaseStock = (id) => {
+    const increaseStock = async (id) => {
         const value = Number(stockInput[id] || 0);
         if (value > 0) {
-            setItems(
-                items.map((item) =>
-                    item.id === id
-                        ? { ...item, quantity: Number(item.quantity) + value }
-                        : item
-                )
-            );
+            try {
+                const res = await axios.put("/api/items", {
+                    id,
+                    quantity:
+                        Number(
+                            items.find((item) => item._id === id)?.quantity
+                        ) + value,
+                });
+            } catch (e) {
+                console.log(e.message);
+            } finally {
+                setLoadData(true);
+            }
             setStockInput({ ...stockInput, [id]: "" });
         }
     };
@@ -41,19 +69,35 @@ const Stock = () => {
     const decreaseStock = (id) => {
         const value = Number(stockInput[id] || 0);
         if (value > 0) {
-            setItems(
-                items.map((item) =>
-                    item.id === id && item.quantity >= value
-                        ? { ...item, quantity: Number(item.quantity) - value }
-                        : item
-                )
-            );
+            try {
+                const res = axios.put("/api/items", {
+                    id,
+                    quantity: Math.max(
+                        0,
+                        Number(
+                            items.find((item) => item._id === id)?.quantity
+                        ) - value
+                    ),
+                });
+                console.log(res);
+            } catch (e) {
+                console.log(e.message);
+            } finally {
+                setLoadData(true);
+            }
             setStockInput({ ...stockInput, [id]: "" });
         }
     };
 
-    const deleteItem = (id) => {
-        setItems(items.filter((item) => item.id !== id));
+    const deleteItem = async (id) => {
+        try {
+            const res = await axios.delete(`/api/items?id=${id}`);
+            console.log(res);
+        } catch (e) {
+            console.log(e.message);
+        } finally {
+            setLoadData(true);
+        }
     };
 
     const totalStock = items.reduce(
@@ -62,7 +106,7 @@ const Stock = () => {
     );
 
     const filteredItems = items.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        item.itemname.toLowerCase().includes(search.toLowerCase())
     );
 
     return (
@@ -70,7 +114,7 @@ const Stock = () => {
             {/* Top Back Button */}
             <div className="flex items-center mb-4">
                 <a
-                    href="/home"
+                    href="/dashboard"
                     className="inline-flex items-center border active:bg-slate-700  border-white px-3 py-2 rounded-md text-white hover:bg-gray-300ko">
                     ← Back
                 </a>
@@ -159,7 +203,7 @@ const Stock = () => {
                                     key={item.id}
                                     className="text-center sm:text-center">
                                     <td className="border px-2 sm:px-4 py-2 text-left">
-                                        {item.name}
+                                        {item.itemname}
                                     </td>
                                     <td className="border px-2 sm:px-4 py-2">
                                         {item.quantity}
@@ -170,12 +214,12 @@ const Stock = () => {
                                                 type="number"
                                                 placeholder="Qty"
                                                 value={
-                                                    stockInput[item.id] || ""
+                                                    stockInput[item._id] || ""
                                                 }
                                                 onChange={(e) =>
                                                     setStockInput({
                                                         ...stockInput,
-                                                        [item.id]:
+                                                        [item._id]:
                                                             e.target.value,
                                                     })
                                                 }
@@ -183,14 +227,14 @@ const Stock = () => {
                                             />
                                             <button
                                                 onClick={() =>
-                                                    increaseStock(item.id)
+                                                    increaseStock(item._id)
                                                 }
                                                 className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600">
                                                 +
                                             </button>
                                             <button
                                                 onClick={() =>
-                                                    decreaseStock(item.id)
+                                                    decreaseStock(item._id)
                                                 }
                                                 className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
                                                 -
@@ -199,7 +243,7 @@ const Stock = () => {
                                     </td>
                                     <td className="border px-2 sm:px-4 py-2">
                                         <button
-                                            onClick={() => deleteItem(item.id)}
+                                            onClick={() => deleteItem(item._id)}
                                             className="bg-red-700 text-white px-3 py-1 rounded hover:bg-red-800">
                                             Delete
                                         </button>

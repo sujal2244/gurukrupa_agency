@@ -1,10 +1,47 @@
+"use client";
+
+import axios from "axios";
+import { useEffect, useState } from "react";
+
 const Payment = () => {
+    //pending payment only paid button
+    const [bills, setBills] = useState([]);
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        const fetchBills = async () => {
+            try {
+                const res = await axios.get("/api/bill?paymentStatus=unpaid");
+                setBills(res.data.data);
+                console.log(res);
+            } catch (e) {
+                console.log(e);
+            }finally {
+                setLoading(false);
+            }
+        };
+        fetchBills();
+    }, [loading]);
+    const handlePaid = async (billId) => {
+        try {
+            await axios.put(`/api/bill?id=${billId}`);
+            // Update the bill status locally after successful payment
+            setBills((prevBills) =>
+                prevBills.map((bill) =>
+                    bill._id === billId ? { ...bill, isPaid: true } : bill
+                )
+            );
+            setLoading(true);
+        } catch (e) {
+            console.log(e);
+        }
+    };
+    const totalAmount = bills.reduce((sum, bill) => sum + bill.total, 0);
     return (
         <div className="h-screen w-full bg-gray-800 flex flex-col items-center p-4">
             {/* Header */}
             <div className="w-full flex justify-center items-center flex-wrap">
                 <a
-                    href="/home"
+                    href="/dashboard"
                     className="inline-flex items-center border active:bg-slate-700 border-white px-3 py-2 rounded-md text-white hover:bg-gray-300 mb-2">
                     ← Back
                 </a>
@@ -39,48 +76,45 @@ const Payment = () => {
 
                     {/* Table Body */}
                     <tbody>
-                        <tr>
-                            <td className="border border-white px-4 py-2">
-                                INV-001
-                            </td>
-                            <td className="border border-white px-4 py-2">
-                                John Doe
-                            </td>
-                            <td className="border border-white px-4 py-2">
-                                2025-09-28
-                            </td>
-                            <td className="border border-white px-4 py-2">
-                                ₹5000
-                            </td>
-                            <td className="border border-white px-4 py-2">
-                                <button className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-semibold px-4 py-1 rounded-lg shadow-md text-sm md:text-base">
-                                    Paid
-                                </button>
-                            </td>
-                        </tr>
-
-                        {/* Line between rows */}
-                        <tr className="border-t border-gray-500"></tr>
-
-                        <tr>
-                            <td className="border border-white px-4 py-2">
-                                INV-002
-                            </td>
-                            <td className="border border-white px-4 py-2">
-                                Jane Smith
-                            </td>
-                            <td className="border border-white px-4 py-2">
-                                2025-09-29
-                            </td>
-                            <td className="border border-white px-4 py-2">
-                                ₹7500
-                            </td>
-                            <td className="border border-white px-4 py-2 text-center">
-                                <button className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-semibold px-4 py-1 rounded-lg shadow-md text-sm md:text-base">
-                                    Paid
-                                </button>
-                            </td>
-                        </tr>
+                        {bills ? (
+                            bills.map((bill) => (
+                                <tr key={bill._id}>
+                                    <td className="border border-white px-4 py-2">
+                                        {bill.invoiceNumber}
+                                    </td>
+                                    <td className="border border-white px-4 py-2">
+                                        {bill.client.clientname}
+                                    </td>
+                                    <td className="border border-white px-4 py-2">
+                                        {
+                                            new Date(bill.issueDate)
+                                                .toISOString()
+                                                .split("T")[0]
+                                        }
+                                    </td>
+                                    <td className="border border-white px-4 py-2">
+                                        ₹{bill.total}
+                                    </td>
+                                    <td className="border border-white px-4 py-2 text-center">
+                                        <button
+                                            className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-semibold px-4 py-1 rounded-lg shadow-md text-sm md:text-base"
+                                            onClick={() =>
+                                                handlePaid(bill._id)
+                                            }>
+                                            Paid
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td
+                                    colSpan="5"
+                                    className="border border-white px-4 py-2 text-center">
+                                    No paid bills found.
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
 
                     {/* Table Footer */}
@@ -92,7 +126,7 @@ const Payment = () => {
                                 Total
                             </td>
                             <td className="border border-white px-4 py-2 font-bold">
-                                ₹12,500
+                                ₹{totalAmount.toFixed(2)}
                             </td>
                         </tr>
                     </tfoot>

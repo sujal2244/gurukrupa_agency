@@ -70,7 +70,7 @@ export default function StockManager() {
             {/* Top Back Button */}
             <div className="flex items-center mb-4">
                 <a
-                    href="/home"
+                    href="/dashboard"
                     className="inline-flex items-center border active:bg-slate-700  border-white px-3 py-2 rounded-md text-white hover:bg-gray-300ko">
                     ← Back
                 </a>

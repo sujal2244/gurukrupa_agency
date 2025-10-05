@@ -1,4 +1,4 @@
-import dbConnect from "@/config/db";
+import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";

@@ -1,149 +1,88 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import InvoicePrint from "@/components/InvoicePrint";
+import printDocument from "@/lib/printDocument";
+import axios from "axios";
+import html2pdf from "html2pdf.js";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Billout() {
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+    const searchParams = useSearchParams();
+    const [invoiceData, setInvoiceData] = useState(null);
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const id = searchParams.get("id");
 
-  // Invoice Data (Sample)
-  const invoiceData = {
-    invoiceNumber: "INV-2024-001",
-    date: "September 28, 2025",
-    dueDate: "October 28, 2025",
-    company: {
-      name: "Gurukrupa Agency",
-      address: "Chinale Galli",
-      phone: "9579749504",
-      email: "gatade.com",
-    },
-    customer: {
-      name: "Sujal Gatade",
-      company: "SG Enterprises",
-      address: "Chinale Galli",
-      email: "sujal@sgenterprises.com",
-    },
-    items: [
-      { id: 1, description: "Web Development Services", quantity: 40, rate: 125, amount: 5000 },
-      { id: 2, description: "UI/UX Design Consultation", quantity: 20, rate: 150, amount: 3000 },
-      { id: 3, description: "Project Management", quantity: 15, rate: 100, amount: 1500 },
-    ],
-    notes: "Thank you for your business! Payment is due within 30 days of invoice date.",
-  }
+    useEffect(() => {
+        const fetchBill = async () => {
+            const res = await axios.get(`/api/bill?id=${id}`);
+            setInvoiceData(res.data.data);
+        };
+        if (id) fetchBill();
+    }, [id]);
 
-  // Calculations
-  const subtotal = invoiceData.items.reduce((sum, item) => sum + item.amount, 0)
-  const taxRate = 0.08
-  const taxAmount = subtotal * taxRate
-  const total = subtotal + taxAmount
+    const generatePDF = async () => {
+        if (!invoiceData) return;
+        setIsGeneratingPDF(true);
+        try {
+            const originalElement = document.getElementById("invoice-content");
+            printDocument({ invoiceData, originalElement });
+        } catch (err) {
+            console.error("PDF Error:", err);
+        } finally {
+            setIsGeneratingPDF(false);
+        }
+    };
 
-  // PDF generator
-  const generatePDF = async () => {
-    setIsGeneratingPDF(true)
-    try {
-      const html2pdf = (await import("html2pdf.js")).default || (await import("html2pdf.js"))
-      const element = document.getElementById("invoice-content")
+    return (
+        <div
+            style={{
+                minHeight: "100vh",
+                backgroundColor: "#1f2937",
+                padding: "40px",
+                color: "#000",
+            }}>
+            <div
+                style={{
+                    maxWidth: "800px",
+                    margin: "0 auto",
+                    backgroundColor: "#fff",
+                    padding: "32px",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                }}>
+                {/* Top Action Bar */}
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "24px",
+                    }}>
+                    <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>
+                        Invoice
+                    </h1>
+                    <button
+                        onClick={generatePDF}
+                        disabled={isGeneratingPDF}
+                        style={{
+                            backgroundColor: "#2563eb",
+                            color: "#fff",
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            border: "none",
+                            opacity: isGeneratingPDF ? 0.6 : 1,
+                        }}>
+                        {isGeneratingPDF ? "Generating..." : "Download PDF"}
+                    </button>
+                </div>
 
-      if (!element) {
-        console.error("Invoice element not found")
-        return
-      }
-
-      const options = {
-        margin: 0.5,
-        filename: `invoice-${invoiceData.invoiceNumber}.pdf`,
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-      }
-
-      await html2pdf().set(options).from(element).save()
-    } catch (error) {
-      console.error("PDF Error:", error)
-    } finally {
-      setIsGeneratingPDF(false)
-    }
-  }
-
-  return (
-    <div className="min-h-screen text-black bg-gray-800 py-10">
-      <div className="max-w-4xl mx-auto bg-white shadow-lg p-8 rounded-lg">
-        {/* Top Action Bar */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Invoice</h1>
-          <button
-            onClick={generatePDF}
-            disabled={isGeneratingPDF}
-            className="bg-blue-600 text-white px-4 py-2 rounded active:bg-amber-300 hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {isGeneratingPDF ? "Generating..." : "Download PDF"}
-          </button>
-        </div>
-
-        {/* Invoice Content */}
-        <div id="invoice-content">
-          {/* Header */}
-          <div className="flex justify-between mb-8">
-            <div>
-              <h2 className="text-xl font-bold">{invoiceData.company.name}</h2>
-              <p>{invoiceData.company.address}</p>
-              <p>{invoiceData.company.phone}</p>
-              <p>{invoiceData.company.email}</p>
+                {/* Invoice Content */}
+                <div id="invoice-content">
+                    <InvoicePrint invoiceData={invoiceData} />
+                </div>
             </div>
-            <div className="text-right">
-              <p className="text-lg font-semibold">Invoice #: {invoiceData.invoiceNumber}</p>
-              <p>Date: {invoiceData.date}</p>
-              <p>Due Date: {invoiceData.dueDate}</p>
-            </div>
-          </div>
-
-          {/* Customer Info */}
-          <div className="mb-8">
-            <h3 className="font-semibold">Bill To:</h3>
-            <p>{invoiceData.customer.name}</p>
-            <p>{invoiceData.customer.company}</p>
-            <p>{invoiceData.customer.address}</p>
-            <p>{invoiceData.customer.email}</p>
-          </div>
-
-          {/* Items Table */}
-          <table className="w-full border border-gray-300 mb-6">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="border px-4 py-2 text-left">Description</th>
-                <th className="border px-4 py-2 text-center">Qty</th>
-                <th className="border px-4 py-2 text-right">Rate</th>
-                <th className="border px-4 py-2 text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoiceData.items.map((item) => (
-                <tr key={item.id}>
-                  <td className="border px-4 py-2">{item.description}</td>
-                  <td className="border px-4 py-2 text-center">{item.quantity}</td>
-                  <td className="border px-4 py-2 text-right">{item.rate.toFixed(2)}</td>
-                  <td className="border px-4 py-2 text-right">{item.amount.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Totals */}
-          <div className="text-right mb-6">
-            <p>
-              Subtotal: <span className="font-semibold">{subtotal.toFixed(2)}</span>
-            </p>
-            <p>
-              Tax (8%): <span className="font-semibold">{taxAmount.toFixed(2)}</span>
-            </p>
-            <p className="text-xl font-bold">Total: {total.toFixed(2)}</p>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <h3 className="font-semibold">Notes</h3>
-            <p className="text-gray-600">{invoiceData.notes}</p>
-          </div>
         </div>
-      </div>
-    </div>
-  )
+    );
 }
