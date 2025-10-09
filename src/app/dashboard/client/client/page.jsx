@@ -1,33 +1,182 @@
 "use client";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
 
-const page = () => {
-    const [clients, setClients] = useState([]);
-    const router =useRouter();
-    useEffect(() => {
-        const fetchClients = async () => {
-            try {
-                const res = await axios.get("/api/client");
-                setClients(res.data.data);
-            } catch (error) {
-                console.error("Error fetching clients:", error);
-            }
-        };
+import { useState } from "react";
 
-        fetchClients();
-    }, []);
-    return (
-        <div>
-            {clients?.map((client) => (
-                <div className="flex" key={client._id} onClick={()=>router.push(`/dashboard/client/client/${client._id}`)}>
-                    <h2>{client.clientname}</h2>
-                    <p>{client.address}</p>
-                </div>
-            ))}
+const ClientDetails = () => {
+  const [showForm, setShowForm] = useState(false);
+  const [client, setClient] = useState({
+    name: "",
+    address: "",
+    gstNumber: "",
+  });
+  const [clients, setClients] = useState([
+    // Example pre-saved clients (optional)
+    {
+      name: "Shri Swami Samarth Enterprises",
+      address: "123, Main Market Road, Pune, Maharashtra - 411001",
+      gstNumber: "27ABCDE1234F1Z5",
+    },
+  ]);
+
+  // Handle input change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setClient({ ...client, [name]: value });
+  };
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!client.name || !client.address || !client.gstNumber) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    setClients([...clients, client]);
+    setClient({ name: "", address: "", gstNumber: "" });
+    setShowForm(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 flex flex-col items-center">
+      <div className="w-full max-w-4xl bg-white shadow-lg rounded-2xl p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-blue-700">
+            Client Details
+          </h2>
+
+          {/* Add Client Details Button */}
+          {!showForm && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
+            >
+              Add Client Details
+            </button>
+          )}
         </div>
-    );
+
+        {/* Add Client Form */}
+        {showForm && (
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 border border-gray-200 rounded-xl p-5 mb-6 bg-gray-50"
+          >
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Name */}
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">
+                  Client Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={client.name}
+                  onChange={handleChange}
+                  placeholder="Enter client name"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* GST Number */}
+              <div>
+                <label className="block text-gray-700 font-semibold mb-1">
+                  GST Number
+                </label>
+                <input
+                  type="text"
+                  name="gstNumber"
+                  value={client.gstNumber}
+                  onChange={handleChange}
+                  placeholder="Enter GST number"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                />
+              </div>
+            </div>
+
+            {/* Address */}
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1">
+                Address
+              </label>
+              <textarea
+                name="address"
+                value={client.address}
+                onChange={handleChange}
+                placeholder="Enter address"
+                rows="2"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Form Buttons */}
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
+              >
+                Save Client
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="flex-1 bg-red-500 text-white py-2 rounded-lg font-semibold hover:bg-red-600 transition duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Clients Table */}
+        {clients.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300 text-sm md:text-base">
+              <thead className="bg-blue-100">
+                <tr>
+                  <th className="border border-gray-300 px-4 py-2 text-left">
+                    Sr No
+                  </th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">
+                    Name
+                  </th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">
+                    Address
+                  </th>
+                  <th className="border border-gray-300 px-4 py-2 text-left">
+                    GST Number
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {clients.map((c, index) => (
+                  <tr
+                    key={index}
+                    className="hover:bg-gray-50 transition duration-150"
+                  >
+                    <td className="border border-gray-300 px-4 py-2">
+                      {index + 1}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">{c.name}</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {c.address}
+                    </td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      {c.gstNumber}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 mt-4">
+            No clients added yet.
+          </p>
+        )}
+      </div>
+    </div>
+  );
 };
 
-export default page;
+export default ClientDetails;

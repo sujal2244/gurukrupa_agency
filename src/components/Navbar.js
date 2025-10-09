@@ -8,9 +8,12 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-white sticky top-0 px-6 py-3 flex justify-between items-center">
+    <nav className="w-full bg-white sticky top-0 z-50 px-6 py-3 flex justify-between items-center">
       {/* Logo */}
-      <Link href={"/dashboard"} className="sm:w-[20vw] w-[70vw] flex items-center">
+      <Link
+        href={"/dashboard"}
+        className="sm:w-[20vw] w-[70vw] flex items-center"
+      >
         <Image src={logo} alt="Logo" className="w-[47vw] h-[5vh] m-3" />
       </Link>
 
