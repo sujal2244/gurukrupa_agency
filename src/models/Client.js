@@ -6,6 +6,8 @@ const clientSchema = new Schema({
         required: true,
     },
     address: { type: String, required: true },
+    phone: { type: Number },
+    gstNumber: { type: String },
     createdAt: {
         type: Date,
         default: Date.now,

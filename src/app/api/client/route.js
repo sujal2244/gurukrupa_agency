@@ -43,7 +43,8 @@ export const GET = async (req) => {
     }
 };
 export const POST = async (req) => {
-    const { clientname, address } = await req.json();
+    const { clientname, address,gstNumber,phone } = await req.json();
+    console.log(clientname, address,gstNumber,phone);
     try {
         await dbConnect();
         const client = await Client.findOne({ clientname, address });
@@ -58,7 +59,7 @@ export const POST = async (req) => {
                 }
             );
         }
-        const newClient = new Client({ clientname, address });
+        const newClient = new Client({ clientname, address, gstNumber, phone });
         await newClient.save();
         return Response.json(
             {

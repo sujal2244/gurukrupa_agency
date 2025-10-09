@@ -46,7 +46,7 @@ const Billinghistory = () => {
   return (
     <div className="min-h-screen w-full bg-gray-900 flex flex-col items-center p-4 sm:p-6">
       {/* Header Section */}
-      <div className="w-full flex justify-between items-center mb-6">
+      <div className="w-full flex  items-center mb-6">
         <a
           href="/dashboard"
           className="inline-flex items-center border border-white px-3 py-2 rounded-md text-white hover:bg-gray-700 active:bg-slate-700 transition-all duration-200"

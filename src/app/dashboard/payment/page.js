@@ -4,9 +4,9 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 const Payment = () => {
-  //pending payment only paid button
   const [bills, setBills] = useState(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchBills = async () => {
       try {
@@ -21,10 +21,10 @@ const Payment = () => {
     };
     fetchBills();
   }, [loading]);
+
   const handlePaid = async (billId) => {
     try {
       await axios.put(`/api/bill?id=${billId}`);
-      // Update the bill status locally after successful payment
       setBills((prevBills) =>
         prevBills.map((bill) =>
           bill._id === billId ? { ...bill, isPaid: true } : bill
@@ -35,7 +35,9 @@ const Payment = () => {
       console.log(e);
     }
   };
+
   const totalAmount = bills?.reduce((sum, bill) => sum + bill.total, 0) || 0;
+
   return (
     <div className="h-screen w-full bg-gray-800 flex flex-col items-center p-4">
       {/* Header */}
@@ -51,7 +53,7 @@ const Payment = () => {
         </h1>
       </div>
 
-      {/* Table Wrapper for Responsive View */}
+      {/* Table Wrapper */}
       <div className="overflow-x-auto w-full mt-6">
         <table className="min-w-full border-collapse border border-white text-white text-sm md:text-base">
           {/* Table Header */}
@@ -59,6 +61,7 @@ const Payment = () => {
             <tr className="bg-gray-700">
               <th className="border border-white px-4 py-2">Invoice No</th>
               <th className="border border-white px-4 py-2">Client</th>
+              <th className="border border-white px-4 py-2">Address</th> {/* New column */}
               <th className="border border-white px-4 py-2">Date</th>
               <th className="border border-white px-4 py-2">Amount</th>
               <th className="border border-white px-4 py-2">Paid</th>
@@ -75,6 +78,9 @@ const Payment = () => {
                   </td>
                   <td className="border border-white px-4 py-2">
                     {bill?.client?.clientname}
+                  </td>
+                  <td className="border border-white px-4 py-2">
+                    {bill?.client?.address || "-"} {/* Address field */}
                   </td>
                   <td className="border border-white px-4 py-2">
                     {new Date(bill.issueDate).toISOString().split("T")[0]}
@@ -95,10 +101,10 @@ const Payment = () => {
             ) : (
               <tr>
                 <td
-                  colSpan="5"
+                  colSpan="6"
                   className="border border-white px-4 py-2 text-center"
                 >
-                  No paid bills found.
+                  No unpaid bills found.
                 </td>
               </tr>
             )}
@@ -108,7 +114,7 @@ const Payment = () => {
           <tfoot>
             <tr className="bg-gray-700">
               <td
-                colSpan="4"
+                colSpan="5"
                 className="border border-white px-4 py-2 text-right font-bold"
               >
                 Total
@@ -123,4 +129,5 @@ const Payment = () => {
     </div>
   );
 };
+
 export default Payment;
