@@ -5,7 +5,12 @@ import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 export const POST = async (request) => {
     const { email, password, username } = await request.json();
-    return;
+    if (!email || !password || !username) {
+        return Response.json(
+            { message: "All fields are required", success: false },
+            { status: 400 }
+        );
+    }
     try {
         await dbConnect();
         const existingUser = await User.findOne({ email });

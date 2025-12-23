@@ -1,9 +1,7 @@
-import html2pdf from "html2pdf.js";
-
 const printDocument = async ({ invoiceData, originalElement, month }) => {
     try {
         if (!originalElement) return;
-
+        const html2pdf = (await import("html2pdf.js")).default;//work prperly on server side rendering
         // Clone node and apply inline styles for PDF
         const clone = originalElement.cloneNode(true);
         clone.style.background = "#fff";
