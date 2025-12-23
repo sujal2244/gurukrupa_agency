@@ -3,7 +3,6 @@
 import InvoicePrint from "@/components/InvoicePrint";
 import printDocument from "@/lib/printDocument";
 import axios from "axios";
-import html2pdf from "html2pdf.js";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
