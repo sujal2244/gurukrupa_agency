@@ -98,7 +98,7 @@ const CreateBill = () => {
       };
     });
     setItems(updatedItems);
-  }, [taxRate,items]);
+  }, [taxRate]);
 
   // ✅ Calculate subtotal, tax, total
   useEffect(() => {
