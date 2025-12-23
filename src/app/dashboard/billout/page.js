@@ -4,9 +4,9 @@ import InvoicePrint from "@/components/InvoicePrint";
 import printDocument from "@/lib/printDocument";
 import axios from "axios";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
-export default function Billout() {
+function Billout() {
     const searchParams = useSearchParams();
     const [invoiceData, setInvoiceData] = useState(null);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -83,5 +83,12 @@ export default function Billout() {
                 </div>
             </div>
         </div>
+    );
+}
+export default function Page() {
+    return (
+        <Suspense fallback={<div className="text-white p-10">Loading...</div>}>
+            <Billout />
+        </Suspense>
     );
 }
